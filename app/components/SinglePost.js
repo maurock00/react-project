@@ -1,12 +1,18 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import ReactTooltip from "react-tooltip";
 import AxiosInstance from "../AxiosClient";
+import DispatchContext from "../DispatchContext";
+import StateContext from "../StateContext";
 import LoadingDots from "./LoadingDots";
+import NotContent from "./NotContent";
 import Page from "./Page";
 
 function SinglePost() {
+  const appState = useContext(StateContext);
+  const appDispatch = useContext(DispatchContext);
+  const navigate = useNavigate();
   const { id } = useParams();
   const [loading, setLoading] = useState(true);
   const [post, setPost] = useState({});
@@ -31,7 +37,45 @@ function SinglePost() {
     return () => {
       controller.abort();
     };
-  }, []);
+  }, [id]);
+
+  function isOwner() {
+    return appState.loggedIn && appState.user.username === post.author.username;
+  }
+
+  async function deleteHandler() {
+    const deletePost = window.confirm(
+      "Do you really want to delete this post ?"
+    );
+    try {
+      if (deletePost) {
+        const deleteResponse = await AxiosInstance.delete(`/post/${post._id}`, {
+          data: { token: appState.user.token },
+        });
+
+        if (deleteResponse.data === "Success") {
+          appDispatch({
+            type: "addFlashMessages",
+            value: ["Post deleted succesfully"],
+          });
+          navigate(`/profile/${appState.user.username}`);
+        } else {
+          appDispatch({
+            type: "addFlashMessages",
+            value: [`${deleteResponse.data}`],
+          });
+        }
+      }
+
+      return;
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  if (!loading && !post) {
+    return <NotContent></NotContent>;
+  }
 
   if (loading)
     return (
@@ -44,25 +88,28 @@ function SinglePost() {
     <Page title={post.title}>
       <div className="d-flex justify-content-between">
         <h2>{post.title}</h2>
-        <span className="pt-2">
-          <a
-            href="#"
-            data-tip="Edit"
-            data-for="edit"
-            className="text-primary mr-2"
-          >
-            <i className="fas fa-edit"></i>
-          </a>
-          <ReactTooltip id="edit" className="custom-tooltip" />{" "}
-          <a
-            data-tip="Delete"
-            data-for="delete"
-            className="delete-post-button text-danger"
-          >
-            <i className="fas fa-trash"></i>
-          </a>
-          <ReactTooltip id="delete" className="custom-tooltip" />
-        </span>
+        {isOwner() && (
+          <span className="pt-2">
+            <Link
+              to={`/post/${post._id}/edit`}
+              data-tip="Edit"
+              data-for="edit"
+              className="text-primary mr-2"
+            >
+              <i className="fas fa-edit"></i>
+            </Link>
+            <ReactTooltip id="edit" className="custom-tooltip" />{" "}
+            <a
+              onClick={deleteHandler}
+              data-tip="Delete"
+              data-for="delete"
+              className="delete-post-button text-danger"
+            >
+              <i className="fas fa-trash"></i>
+            </a>
+            <ReactTooltip id="delete" className="custom-tooltip" />
+          </span>
+        )}
       </div>
 
       <p className="text-muted small mb-4">

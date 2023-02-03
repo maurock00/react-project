@@ -16,6 +16,10 @@ import FlashMessages from "./components/FlashMessages";
 import StateContext from "./StateContext";
 import DispatchContext from "./DispatchContext";
 import Profile from "./components/Profile";
+import EditPost from "./components/EditPost";
+import NotContent from "./components/NotContent";
+import Search from "./components/Search";
+import { CSSTransition } from "react-transition-group";
 
 function App() {
   const initialState = {
@@ -26,6 +30,7 @@ function App() {
       token: localStorage.getItem("rpToken"),
       avatar: localStorage.getItem("rpAvatar"),
     },
+    searchIsOpen: false,
   };
 
   function AppReducer(stateDraft, action) {
@@ -39,6 +44,12 @@ function App() {
         return;
       case "addFlashMessages":
         stateDraft.flashMessages.push(action.value);
+        return;
+      case "openSearch":
+        stateDraft.searchIsOpen = true;
+        return;
+      case "closeSearch":
+        stateDraft.searchIsOpen = false;
         return;
     }
   }
@@ -71,9 +82,19 @@ function App() {
             <Route path="/profile/:username/*" element={<Profile />} />
             <Route path="/create-post" element={<CreatePost />} />
             <Route path="/post/:id" element={<SinglePost />} />
+            <Route path="/post/:id/edit" element={<EditPost />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/about-us" element={<About />} />
+            <Route path="*" element={<NotContent />} />
           </Routes>
+          <CSSTransition
+            timeout={330}
+            in={state.searchIsOpen}
+            classNames={"search-overlay"}
+            unmountOnExit
+          >
+            <Search />
+          </CSSTransition>
           <Footer />
         </BrowserRouter>
       </DispatchContext.Provider>

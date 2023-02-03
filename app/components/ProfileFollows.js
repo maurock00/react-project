@@ -3,7 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import AxiosInstance from "../AxiosClient";
 import LoadingDots from "./LoadingDots";
 
-function PostList() {
+function ProfileFollows(props) {
   const { username } = useParams();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -11,7 +11,9 @@ function PostList() {
   useEffect(() => {
     async function fetchPosts() {
       try {
-        const response = await AxiosInstance.get(`/profile/${username}/posts`);
+        const response = await AxiosInstance.get(
+          `/profile/${username}/${[props.kind]}`
+        );
         setPosts(response.data);
         setLoading(false);
       } catch (e) {
@@ -20,25 +22,21 @@ function PostList() {
     }
 
     fetchPosts();
-  }, [username]);
+  }, [username, props.kind]);
 
   if (loading) return <LoadingDots />;
 
   return (
     <div className="list-group">
-      {posts.map((post) => {
+      {posts.map((user, index) => {
         return (
           <Link
-            key={post._id}
-            to={`/post/${post._id}`}
+            key={index}
+            to={`/profile/${user.username}`}
             className="list-group-item list-group-item-action"
           >
-            <img className="avatar-tiny" src={post.author.avatar} />{" "}
-            <strong>{post.title}</strong>
-            <span className="text-muted small">
-              {" "}
-              on {new Date(post.createdDate).toLocaleDateString("en-US")}
-            </span>
+            <img className="avatar-tiny" src={user.avatar} />{" "}
+            <span className="text-muted small">{user.username}</span>
           </Link>
         );
       })}
@@ -46,4 +44,4 @@ function PostList() {
   );
 }
 
-export default PostList;
+export default ProfileFollows;
