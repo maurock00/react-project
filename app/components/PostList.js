@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import AxiosInstance from "../AxiosClient";
 import LoadingDots from "./LoadingDots";
+import PostItem from "./PostItem";
 
 function PostList() {
   const { username } = useParams();
@@ -27,20 +28,7 @@ function PostList() {
   return (
     <div className="list-group">
       {posts.map((post) => {
-        return (
-          <Link
-            key={post._id}
-            to={`/post/${post._id}`}
-            className="list-group-item list-group-item-action"
-          >
-            <img className="avatar-tiny" src={post.author.avatar} />{" "}
-            <strong>{post.title}</strong>
-            <span className="text-muted small">
-              {" "}
-              on {new Date(post.createdDate).toLocaleDateString("en-US")}
-            </span>
-          </Link>
-        );
+        return <PostItem hideAuthor={true} key={post._id} post={post} />;
       })}
     </div>
   );

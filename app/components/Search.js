@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useImmer } from "use-immer";
 import AxiosInstance from "../AxiosClient";
 import DispatchContext from "../DispatchContext";
+import PostItem from "./PostItem";
 
 function Search() {
   const controller = new AbortController();
@@ -126,23 +127,11 @@ function Search() {
                   </div>
                   {localState.results.map((post) => {
                     return (
-                      <Link
+                      <PostItem
                         key={post._id}
-                        to={`/post/${post._id}`}
-                        className="list-group-item list-group-item-action"
+                        post={post}
                         onClick={() => appDispatch({ type: "closeSearch" })}
-                      >
-                        <img className="avatar-tiny" src={post.author.avatar} />{" "}
-                        <strong>{post.title}</strong>
-                        <span className="text-muted small">
-                          {" "}
-                          on{" "}
-                          {new Date(post.createdDate).toLocaleDateString(
-                            "en-US"
-                          )}{" "}
-                          {" by " + post.author.username}
-                        </span>
-                      </Link>
+                      />
                     );
                   })}
                 </div>
