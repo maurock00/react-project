@@ -20,6 +20,7 @@ import EditPost from "./components/EditPost";
 import NotContent from "./components/NotContent";
 import Search from "./components/Search";
 import { CSSTransition } from "react-transition-group";
+import Chat from "./components/Chat";
 
 function App() {
   const initialState = {
@@ -31,6 +32,7 @@ function App() {
       avatar: localStorage.getItem("rpAvatar"),
     },
     searchIsOpen: false,
+    chatIsOpen: false,
   };
 
   function AppReducer(stateDraft, action) {
@@ -50,6 +52,12 @@ function App() {
         return;
       case "closeSearch":
         stateDraft.searchIsOpen = false;
+        return;
+      case "toggleChat":
+        stateDraft.chatIsOpen = !stateDraft.chatIsOpen;
+        return;
+      case "closeChat":
+        stateDraft.chatIsOpen = false;
         return;
     }
   }
@@ -95,6 +103,7 @@ function App() {
           >
             <Search />
           </CSSTransition>
+          <Chat />
           <Footer />
         </BrowserRouter>
       </DispatchContext.Provider>
