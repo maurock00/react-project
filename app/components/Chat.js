@@ -1,17 +1,67 @@
 import React, { useContext, useEffect, useRef } from "react";
+import { useImmer } from "use-immer";
 import DispatchContext from "../DispatchContext";
 import StateContext from "../StateContext";
+import io from "socket.io-client";
+import { v4 } from "uuid";
+import { Link } from "react-router-dom";
+
+const socket = io("http://localhost:8080");
 
 function Chat() {
   const chatInput = useRef();
+  const chatLog = useRef();
   const appState = useContext(StateContext);
   const appDispatch = useContext(DispatchContext);
+  const [localState, setLocalState] = useImmer({
+    inputValue: "",
+    messages: [],
+  });
+
+  useEffect(() => {
+    socket.on("chatFromServer", (message) => {
+      setLocalState((draft) => {
+        draft.messages.push(message);
+      });
+    });
+  }, []);
+
+  useEffect(() => {
+    chatLog.current.scrollTop = chatLog.current.scrollHeight;
+    if (localState.messages.length && !appState.chatIsOpen)
+      appDispatch({ type: "incrementUnreadChatCount" });
+  }, [localState.messages]);
 
   useEffect(() => {
     if (appState.chatIsOpen) {
       chatInput.current.focus();
+      appDispatch({ type: "clearUnreadChatCount" });
     }
   }, [appState.chatIsOpen]);
+
+  function handleInputChange(e) {
+    const inputValue = e.target.value;
+    setLocalState((draft) => {
+      draft.inputValue = inputValue;
+    });
+  }
+
+  function handleSendMessage(e) {
+    e.preventDefault();
+    setLocalState((draft) => {
+      socket.emit("chatFromBrowser", {
+        message: localState.inputValue,
+        token: appState.user.token,
+      });
+
+      draft.messages.push({
+        message: localState.inputValue,
+        username: appState.user.username,
+        avatar: appState.user.avatar,
+      });
+      draft.inputValue = "";
+    });
+  }
 
   return (
     <div
@@ -30,36 +80,44 @@ function Chat() {
           <i className="fas fa-times-circle"></i>
         </span>
       </div>
-      <div id="chat" className="chat-log">
-        <div className="chat-self">
-          <div className="chat-message">
-            <div className="chat-message-inner">Hey, how are you?</div>
-          </div>
-          <img
-            className="chat-avatar avatar-tiny"
-            src="https://gravatar.com/avatar/b9408a09298632b5151200f3449434ef?s=128"
-          />
-        </div>
+      <div id="chat" className="chat-log" ref={chatLog}>
+        {localState.messages.map((message) => {
+          if (message.username === appState.user.username) {
+            return (
+              <div key={v4()} className="chat-self">
+                <div className="chat-message">
+                  <div className="chat-message-inner">{message.message}</div>
+                </div>
+                <img className="chat-avatar avatar-tiny" src={message.avatar} />
+              </div>
+            );
+          }
 
-        <div className="chat-other">
-          <a href="#">
-            <img
-              className="avatar-tiny"
-              src="https://gravatar.com/avatar/b9216295c1e3931655bae6574ac0e4c2?s=128"
-            />
-          </a>
-          <div className="chat-message">
-            <div className="chat-message-inner">
-              <a href="#">
-                <strong>barksalot:</strong>
-              </a>
-              Hey, I am good, how about you?
+          return (
+            <div key={v4()} className="chat-other">
+              <Link to={`/profile/${message.username}`}>
+                <img className="avatar-tiny" src={message.avatar} />
+              </Link>
+              <div className="chat-message">
+                <div className="chat-message-inner">
+                  <Link to={`/profile/${message.username}`}>
+                    <strong>{message.username}:</strong>
+                  </Link>{" "}
+                  {message.message}
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
+          );
+        })}
       </div>
-      <form id="chatForm" className="chat-form border-top">
+      <form
+        onSubmit={handleSendMessage}
+        id="chatForm"
+        className="chat-form border-top"
+      >
         <input
+          onChange={handleInputChange}
+          value={localState.inputValue}
           ref={chatInput}
           type="text"
           className="chat-field"

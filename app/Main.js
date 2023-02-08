@@ -33,6 +33,7 @@ function App() {
     },
     searchIsOpen: false,
     chatIsOpen: false,
+    unreadChatCount: 0,
   };
 
   function AppReducer(stateDraft, action) {
@@ -58,6 +59,15 @@ function App() {
         return;
       case "closeChat":
         stateDraft.chatIsOpen = false;
+        return;
+      case "openChat":
+        stateDraft.chatIsOpen = true;
+        return;
+      case "incrementUnreadChatCount":
+        stateDraft.unreadChatCount++;
+        return;
+      case "clearUnreadChatCount":
+        stateDraft.unreadChatCount = 0;
         return;
     }
   }
