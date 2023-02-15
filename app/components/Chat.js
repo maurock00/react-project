@@ -25,7 +25,7 @@ function Chat() {
       });
     });
 
-    return socket.current.disconnect();
+    return () => socket.current.disconnect();
   }, []);
 
   useEffect(() => {

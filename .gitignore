@@ -102,3 +102,7 @@ dist
 
 # TernJS port file
 .tern-port
+
+# Omit index.html for recreating with the template 
+app/index.html
+
