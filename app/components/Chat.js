@@ -18,7 +18,7 @@ function Chat() {
   });
 
   useEffect(() => {
-    socket.current = io("http://localhost:8080");
+    socket.current = io(`${process.env.BACKEND_URL}`);
     socket.current.on("chatFromServer", (message) => {
       setLocalState((draft) => {
         draft.messages.push(message);
