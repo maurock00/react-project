@@ -3,8 +3,9 @@ import StateContext from "../StateContext";
 import HeaderLoggedIn from "./HeaderLoggedIn";
 import HeaderLoggedOut from "./HeaderLoggedOut";
 
-function Header() {
+function Header(props) {
   const { loggedIn } = useContext(StateContext);
+  const Header = loggedIn ? <HeaderLoggedIn /> : <HeaderLoggedOut />;
 
   return (
     <header className="header-bar bg-primary mb-3">
@@ -15,7 +16,7 @@ function Header() {
             ComplexApp{" "}
           </a>
         </h4>
-        {loggedIn ? <HeaderLoggedIn /> : <HeaderLoggedOut />}
+        {!props.staticEmpty ? Header : ""}
       </div>
     </header>
   );

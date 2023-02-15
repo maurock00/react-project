@@ -4,9 +4,12 @@
   "description": "",
   "main": "Main.js",
   "scripts": {
-    "dev": "webpack serve",
-    "previewDist": "node previewDist",
+    "dev": "npm-run-all -s generateHtml webpackDev",
+    "webpackDev": "webpack serve",
+    "build": "npm-run-all -s generateHtml webpackBuild",
     "webpackBuild": "webpack",
+    "generateHtml": "babel-node --presets=@babel/preset-react,@babel/preset-env generateHtml.js",
+    "previewDist": "node previewDist",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -22,6 +25,7 @@
   "homepage": "https://github.com/maurock00/react-project#readme",
   "dependencies": {
     "@babel/core": "^7.20.2",
+    "@babel/node": "^7.20.7",
     "@babel/preset-env": "^7.20.2",
     "@babel/preset-react": "^7.18.6",
     "axios": "^1.1.3",
@@ -33,6 +37,7 @@
     "html-webpack-harddisk-plugin": "^2.0.0",
     "html-webpack-plugin": "^5.5.0",
     "immer": "^9.0.16",
+    "npm-run-all": "^4.1.5",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-markdown": "^8.0.3",
