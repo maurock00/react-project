@@ -6,9 +6,8 @@ import io from "socket.io-client";
 import { v4 } from "uuid";
 import { Link } from "react-router-dom";
 
-const socket = io("http://localhost:8080");
-
 function Chat() {
+  const socket = useRef();
   const chatInput = useRef();
   const chatLog = useRef();
   const appState = useContext(StateContext);
@@ -19,11 +18,14 @@ function Chat() {
   });
 
   useEffect(() => {
-    socket.on("chatFromServer", (message) => {
+    socket.current = io("http://localhost:8080");
+    socket.current.on("chatFromServer", (message) => {
       setLocalState((draft) => {
         draft.messages.push(message);
       });
     });
+
+    return socket.current.disconnect();
   }, []);
 
   useEffect(() => {
@@ -49,7 +51,7 @@ function Chat() {
   function handleSendMessage(e) {
     e.preventDefault();
     setLocalState((draft) => {
-      socket.emit("chatFromBrowser", {
+      socket.current.emit("chatFromBrowser", {
         message: localState.inputValue,
         token: appState.user.token,
       });
